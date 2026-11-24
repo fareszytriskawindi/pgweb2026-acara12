@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGIS Pertahanan & Infrastruktur DIY</title>
+    
+   
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+        .legend-box {
+            background: white;
+            padding: 10px 14px;
+            border-radius: 6px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            max-height: 250px;
+            overflow-y: auto;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+        }
+        .legend-box h4 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    
+    var map = L.map('map').setView([-7.75, 110.38], 11);
+
+   
+    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap, GeoServer'
+    }).addTo(map);
+
+   
+    var wmsUrl = "http://localhost:8080/geoserver/pgwebbb/wms";
+
+   
+    var layerKecamatan = L.tileLayer.wms(wmsUrl, {
+        layers: "pgwebbb:DIY_baru",
+        format: "image/png",
+        transparent: true,
+        zIndex: 1
+    }).addTo(map);
+
+  
+    var layerJalan = L.tileLayer.wms(wmsUrl, {
+        layers: "pgwebbb:JALAN_LN_25K",
+        format: "image/png",
+        transparent: true,
+        zIndex: 2
+    }).addTo(map);
+
+   
+    var layerPertahanan = L.tileLayer.wms(wmsUrl, {
+        layers: "pgwebbb:titik_pertahanan",
+        format: "image/png",
+        transparent: true,
+        zIndex: 3
+    }).addTo(map);
+
+   
+    var baseMaps = {
+        "OpenStreetMap": osm
+    };
+
+    var overlayMaps = {
+        "Batas Kecamatan (DIY)": layerKecamatan,
+        "Jaringan Jalan": layerJalan,
+        "Titik Pertahanan & Keamanan": layerPertahanan
+    };
+
+    L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+   
+    L.control.scale({ imperial: false }).addTo(map);
+
+    var legend = L.control({ position: 'bottomleft' });
+    legend.onAdd = function () {
+        var div = L.DomUtil.create('div', 'legend-box');
+        div.innerHTML = '<h4>Legenda</h4>' +
+            '<img src="http://localhost:8080/geoserver/pgwebbb/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=pgwebbb:DIY_baru" alt="Legenda DIY"><br>' +
+            '<img src="http://localhost:8080/geoserver/pgwebbb/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=pgwebbb:titik_pertahanan" alt="Legenda Titik">';
+        return div;
+    };
+    legend.addTo(map);
+</script>
+
+</body>
+</html>
